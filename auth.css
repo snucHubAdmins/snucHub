@@ -1,0 +1,411 @@
+/* ============================================================
+   AUTH.CSS — UniCompass Login / Register / Onboarding Styles
+   ============================================================ */
+
+/* ---------- Floating Login Button (inner pages) ---------- */
+
+#uc-login-fab {
+    position: fixed;
+    top: 22px;
+    right: 28px;
+    z-index: 9000;
+    background: linear-gradient(135deg, #4f66ff, #7b5cff);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 4px 20px rgba(79, 102, 255, 0.4);
+    transition: 0.2s;
+}
+
+#uc-login-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(79, 102, 255, 0.55);
+}
+
+#uc-login-fab .uc-avatar-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ---------- Overlay ---------- */
+
+.uc-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 25, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 9100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+
+.uc-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ---------- Modal Card ---------- */
+
+.uc-modal {
+    background: #111827;
+    border-radius: 28px;
+    padding: 40px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.07);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.25s;
+    position: relative;
+}
+
+.uc-overlay.active .uc-modal {
+    transform: translateY(0) scale(1);
+}
+
+.uc-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #7f8aa8;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-modal-close:hover {
+    color: white;
+}
+
+/* ---------- Logo in modal ---------- */
+
+.uc-modal-logo {
+    font-size: 26px;
+    font-weight: 700;
+    color: #4f66ff;
+    margin-bottom: 6px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-modal-subtitle {
+    color: #7f8aa8;
+    font-size: 14px;
+    margin-bottom: 28px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ---------- Tabs ---------- */
+
+.uc-tabs {
+    display: flex;
+    background: #1b2435;
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 28px;
+}
+
+.uc-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: #7f8aa8;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.uc-tab.active {
+    background: #4f66ff;
+    color: white;
+}
+
+/* ---------- Form Fields ---------- */
+
+.uc-form-group {
+    margin-bottom: 18px;
+}
+
+.uc-label {
+    display: block;
+    color: #aab4d6;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-input,
+.uc-select {
+    width: 100%;
+    background: #1b2435;
+    border: 1.5px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.uc-input:focus,
+.uc-select:focus {
+    border-color: #4f66ff;
+}
+
+.uc-input::placeholder {
+    color: #4a5568;
+}
+
+.uc-select option {
+    background: #1b2435;
+}
+
+/* ---------- Primary Button ---------- */
+
+.uc-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #4f66ff, #7b5cff);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.2s;
+    box-shadow: 0 4px 18px rgba(79, 102, 255, 0.35);
+}
+
+.uc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(79, 102, 255, 0.5);
+}
+
+.uc-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---------- Error / Info Text ---------- */
+
+.uc-error {
+    color: #ff7b7b;
+    font-size: 13px;
+    margin-top: 12px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    min-height: 18px;
+}
+
+/* ---------- Divider ---------- */
+
+.uc-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 22px 0;
+}
+
+/* ---------- Profile Dropdown ---------- */
+
+#uc-profile-dropdown {
+    position: fixed;
+    top: 70px;
+    right: 28px;
+    z-index: 9200;
+    background: #111827;
+    border-radius: 20px;
+    padding: 22px;
+    min-width: 260px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: none;
+}
+
+#uc-profile-dropdown.open {
+    display: block;
+    animation: ucDropIn 0.2s ease;
+}
+
+@keyframes ucDropIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.uc-profile-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-profile-roll {
+    font-size: 13px;
+    color: #7f8aa8;
+    margin-top: 2px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-profile-badge {
+    display: inline-block;
+    background: #1b2435;
+    color: #9eb1ff;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    margin-top: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-logout-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px;
+    background: #1b2435;
+    color: #ff7b7b;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.uc-logout-btn:hover {
+    background: #2a1f2f;
+}
+
+/* ---------- Onboarding Steps ---------- */
+
+.uc-step-indicator {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+}
+
+.uc-step-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: 4px;
+    background: #1b2435;
+    transition: background 0.3s;
+}
+
+.uc-step-dot.done {
+    background: #4f66ff;
+}
+
+.uc-onboard-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.uc-onboard-sub {
+    color: #7f8aa8;
+    font-size: 14px;
+    margin-bottom: 24px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ---------- Toast ---------- */
+
+#uc-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1b2435;
+    color: #dbe4ff;
+    padding: 13px 22px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.3s;
+    z-index: 9999;
+    white-space: nowrap;
+}
+
+#uc-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Navbar Login Button (index.html) ---------- */
+
+.uc-nav-login-btn {
+    background: linear-gradient(135deg, #4f66ff, #7b5cff);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(79, 102, 255, 0.35);
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+.uc-nav-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(79, 102, 255, 0.5);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 520px) {
+    .uc-modal {
+        padding: 28px 20px;
+        border-radius: 20px;
+        margin: 16px;
+    }
+
+    #uc-login-fab {
+        top: 14px;
+        right: 14px;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
