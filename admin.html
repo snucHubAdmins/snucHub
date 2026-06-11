@@ -99,6 +99,24 @@ lbl { display: block; color: #aab4d6; font-size: 13px; font-weight: 500; margin-
 .prof-name { font-size: 16px; font-weight: 600; color: white; }
 .prof-role { font-size: 13px; color: #4f66ff; font-weight: 500; }
 .prof-email { font-size: 13px; color: #aab4d6; }
+
+/* Toggle Switch */
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1b2435; transition: .3s; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: #aab4d6; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: #4f66ff; border-color: #4f66ff; }
+input:checked + .slider:before { transform: translateX(16px); background-color: white; }
+
+/* Pills */
+.pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.08); background: #101827; color: #aab4d6; }
+.pill:hover { background: #1b2435; color: white; }
+.pill.active { background: rgba(79,102,255,0.15); border-color: #4f66ff; color: #9eb1ff; }
+
+/* Icon Buttons */
+.btn-icon { background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 4px; border-radius: 6px; transition: 0.2s; opacity: 0.7; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon:hover { opacity: 1; background: rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
@@ -155,27 +173,34 @@ lbl { display: block; color: #aab4d6; font-size: 13px; font-weight: 500; margin-
         <div class="card">
           <div class="card-h">✏️ Add Event <span class="cnt" id="cntBadge">0</span></div>
           <lbl>Date</lbl>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-              <input type="checkbox" id="evIsRange" onchange="toggleEndDate()" style="accent-color:#4f66ff; width:16px; height:16px; cursor:pointer;">
-              <label for="evIsRange" style="font-size:13px; color:#aab4d6; cursor:pointer;">Event spans multiple days</label>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-size:13px; color:#aab4d6; font-weight:500;">Event spans multiple days</span>
+              <label class="switch">
+                  <input type="checkbox" id="evIsRange" onchange="toggleEndDate()">
+                  <span class="slider"></span>
+              </label>
           </div>
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; align-items:center;">
               <input class="fi" type="date" id="evDate" title="Start Date" style="flex:1;">
-              <input class="fi" type="date" id="evEndDate" title="End Date" style="flex:1; display:none;">
+              <div id="evEndDateWrap" style="display:none; flex:1; align-items:center; gap:10px;">
+                  <span style="color:#7f8aa8; font-size:13px;">to</span>
+                  <input class="fi" type="date" id="evEndDate" title="End Date" style="width:100%;">
+              </div>
           </div>
           <lbl>Title</lbl>
           <input class="fi" type="text" id="evTitle" placeholder="e.g. CIA - I, Independence Day">
           <lbl>Type</lbl>
-          <select class="si" id="evType" onchange="toggleCustomType()">
-            <option value="academic">Academic / Important</option>
-            <option value="exam">Exam</option>
-            <option value="holiday">Holiday</option>
-            <option value="deadline">Deadline</option>
-            <option value="result">Result</option>
-            <option value="event">Event</option>
-            <option value="other">Other (Custom)...</option>
-          </select>
-          <input class="fi" type="text" id="evCustomType" placeholder="Enter custom type..." style="display:none; margin-top:10px;">
+          <div class="pill-group" id="evTypePills">
+              <div class="pill active" onclick="selectPill('academic')">Academic</div>
+              <div class="pill" onclick="selectPill('exam')">Exam</div>
+              <div class="pill" onclick="selectPill('holiday')">Holiday</div>
+              <div class="pill" onclick="selectPill('deadline')">Deadline</div>
+              <div class="pill" onclick="selectPill('result')">Result</div>
+              <div class="pill" onclick="selectPill('event')">Event</div>
+              <div class="pill" onclick="selectPill('other')">+ Custom</div>
+          </div>
+          <input type="hidden" id="evType" value="academic">
+          <input class="fi" type="text" id="evCustomType" placeholder="Enter custom event type..." style="display:none; margin-top:8px;">
           <lbl>Description (optional)</lbl>
           <textarea class="ti" id="evDesc" placeholder="Brief description..."></textarea>
           <lbl id="evApplyToLabel">Apply to Program(s)</lbl>
@@ -449,12 +474,16 @@ function addEvent() {
 
 function toggleEndDate() {
     const isRange = document.getElementById("evIsRange").checked;
-    document.getElementById("evEndDate").style.display = isRange ? "block" : "none";
+    document.getElementById("evEndDateWrap").style.display = isRange ? "flex" : "none";
     if (!isRange) document.getElementById("evEndDate").value = "";
 }
 
-function toggleCustomType() {
-    const type = document.getElementById("evType").value;
+function selectPill(type) {
+    document.querySelectorAll('#evTypePills .pill').forEach(p => p.classList.remove('active'));
+    // The pill clicked might not be event.target if it has children, but pills are text only.
+    if(event && event.target) event.target.classList.add('active');
+    
+    document.getElementById("evType").value = type;
     document.getElementById("evCustomType").style.display = type === "other" ? "block" : "none";
     if (type !== "other") document.getElementById("evCustomType").value = "";
 }
@@ -467,23 +496,27 @@ function editEvent(i) {
     
     if (e.endDate) {
         document.getElementById("evIsRange").checked = true;
-        document.getElementById("evEndDate").style.display = "block";
+        document.getElementById("evEndDateWrap").style.display = "flex";
         document.getElementById("evEndDate").value = e.endDate;
     } else {
         document.getElementById("evIsRange").checked = false;
-        document.getElementById("evEndDate").style.display = "none";
+        document.getElementById("evEndDateWrap").style.display = "none";
         document.getElementById("evEndDate").value = "";
     }
     
     document.getElementById("evTitle").value = e.title;
     
     const defaultTypes = ["academic", "exam", "holiday", "deadline", "result", "event"];
+    document.querySelectorAll('#evTypePills .pill').forEach(p => p.classList.remove('active'));
+    
     if (defaultTypes.includes(e.type)) {
         document.getElementById("evType").value = e.type;
+        document.querySelector(`#evTypePills .pill[onclick*="'${e.type}'"]`)?.classList.add('active');
         document.getElementById("evCustomType").style.display = "none";
         document.getElementById("evCustomType").value = "";
     } else {
         document.getElementById("evType").value = "other";
+        document.querySelector(`#evTypePills .pill[onclick*="'other'"]`)?.classList.add('active');
         document.getElementById("evCustomType").style.display = "block";
         document.getElementById("evCustomType").value = e.type;
     }
@@ -503,9 +536,12 @@ function resetEventForm() {
     document.getElementById("evIsRange").checked = false;
     document.getElementById("evDate").value = "";
     document.getElementById("evEndDate").value = "";
-    document.getElementById("evEndDate").style.display = "none";
+    document.getElementById("evEndDateWrap").style.display = "none";
     document.getElementById("evTitle").value = "";
     document.getElementById("evDesc").value = "";
+    
+    document.querySelectorAll('#evTypePills .pill').forEach(p => p.classList.remove('active'));
+    document.querySelector(`#evTypePills .pill[onclick*="'academic'"]`)?.classList.add('active');
     document.getElementById("evType").value = "academic";
     document.getElementById("evCustomType").value = "";
     document.getElementById("evCustomType").style.display = "none";
@@ -557,8 +593,8 @@ function renderCalendar() {
                 <span class="ev-badge" style="background:${bg};color:${c};">${e.type.toUpperCase()}</span>
             </div>
             <div class="ev-actions" style="display:flex; gap:6px;">
-                <button class="btn btn-s" style="padding:4px 10px; font-size:11px;" onclick="editEvent(${i})">Edit</button>
-                <button class="btn btn-d" style="padding:4px 10px; font-size:11px;" onclick="deleteEvent(${i})">Delete</button>
+                <button class="btn-icon" title="Edit Event" onclick="editEvent(${i})">✏️</button>
+                <button class="btn-icon" title="Delete Event" onclick="deleteEvent(${i})">🗑️</button>
             </div>`;
         wrap.appendChild(row);
     });
@@ -605,8 +641,8 @@ function renderProfessors() {
                 ${p.room ? `<div class="prof-room" style="color:#7f8aa8; font-size:12px;">🚪 Room: ${p.room}</div>` : ""}
             </div>
             <div style="display:flex; gap:8px; margin-top:4px;">
-                <button class="btn btn-s" onclick="editProfessor('${p.id}')">Edit</button>
-                <button class="btn btn-d" onclick="deleteProfessor('${p.id}')">Delete</button>
+                <button class="btn-icon" title="Edit Professor" onclick="editProfessor('${p.id}')">✏️</button>
+                <button class="btn-icon" title="Delete Professor" onclick="deleteProfessor('${p.id}')">🗑️</button>
             </div>
         `;
         el.appendChild(card);
