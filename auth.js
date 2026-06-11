@@ -125,7 +125,11 @@ function bootAuth() {
             db.collection("users").doc(user.uid).get().then(snap => {
                 if (snap.exists) {
                     const data = snap.data();
-                    showLoggedIn(data.displayName || data.rollNumber, data);
+                    let display = data.rollNumber;
+                    if (data.displayName) {
+                        display = data.displayName.split(" ")[0];
+                    }
+                    showLoggedIn(display, data);
                 } else {
                     showLoggedIn(user.email, {});
                 }
@@ -326,12 +330,8 @@ function injectHTML() {
 
     document.body.insertAdjacentHTML("beforeend", html);
 
-    /* Inject floating button on non-index pages */
-    const isIndex = window.location.pathname.endsWith("index.html") ||
-                    window.location.pathname === "/" ||
-                    window.location.pathname === "";
-
-    if (!isIndex) {
+    /* Inject floating button only if there is no navbar button */
+    if (!document.getElementById("uc-nav-btn")) {
         const fab = document.createElement("button");
         fab.id = "uc-login-fab";
         fab.innerHTML = `<span id="uc-fab-text">Login</span>`;
@@ -680,6 +680,14 @@ async function ucObFinish() {
 
         document.getElementById("uc-onboard-overlay").classList.remove("active");
         ucShowToast("Profile saved! Welcome to UniCompass 🎉");
+        
+        if (_ucCurrentUser) {
+            _ucCurrentUser.displayName = name;
+            _ucCurrentUser.degree = degree;
+            _ucCurrentUser.program = program;
+            _ucCurrentUser.year = year;
+            showLoggedIn(name.split(" ")[0], _ucCurrentUser);
+        }
 
     } catch (err) {
 
@@ -790,11 +798,7 @@ function ucShowToast(msg) {
 function renderNotConfigured() {
     injectCSS();
 
-    const isIndex = window.location.pathname.endsWith("index.html") ||
-                    window.location.pathname === "/" ||
-                    window.location.pathname === "";
-
-    if (!isIndex) {
+    if (!document.getElementById("uc-nav-btn")) {
         const fab = document.createElement("button");
         fab.id = "uc-login-fab";
         fab.style.background = "#ff4444";
