@@ -727,7 +727,9 @@ function showLoggedIn(name, data) {
     /* Update navbar button (index.html) */
     const navBtn = document.getElementById("uc-nav-btn");
     if (navBtn) {
-        navBtn.innerHTML = `<span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${initials}</span> ${name || "Profile"}`;
+        let displayStr = name || "Profile";
+        if (displayStr === "admin@unicompass.com") displayStr = "Admin";
+        navBtn.innerHTML = `<span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${initials}</span> ${displayStr}`;
     }
 
     /* Fill profile dropdown */
