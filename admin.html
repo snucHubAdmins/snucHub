@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Admin Dashboard · UniCompass</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body { background: #0b0f19; color: white; min-height: 100vh; overflow-x: hidden; display: flex; }
+.glow { position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1; animation: float 10s infinite ease-in-out alternate; }
+.glow1 { width: 600px; height: 600px; background: #4f66ff; opacity: 0.15; top: -150px; left: -100px; }
+.glow2 { width: 500px; height: 500px; background: #a855f7; opacity: 0.15; bottom: -150px; right: -100px; animation-delay: -5s; }
+@keyframes float { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(30px) scale(1.1); } }
+
+/* Lock */
+#lockScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #0b0f19; }
+.lock-card { 
+    background: rgba(17, 24, 39, 0.4); 
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); 
+    border-radius: 32px; padding: 50px 40px; width: 100%; max-width: 420px; 
+    text-align: center; 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1); 
+    transform: translateY(20px); opacity: 0; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+.lock-icon { font-size: 54px; margin-bottom: 16px; display: inline-block; animation: bounce 3s infinite ease-in-out; filter: drop-shadow(0 0 20px rgba(79,102,255,0.4)); }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.lock-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #fff, #aab4d6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.lock-sub { color: #8e9bbd; font-size: 15px; margin-bottom: 30px; }
+.lock-err { color: #ff6b6b; font-size: 13px; margin-top: 12px; min-height: 18px; font-weight: 500; }
+
+/* Dashboard Layout */
+#dashboard { display: none; width: 100%; min-height: 100vh; }
+.sidebar { width: 280px; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.06); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; z-index: 10; }
+.main-content { margin-left: 280px; flex: 1; padding: 40px; width: calc(100% - 280px); }
+
+.brand { font-size: 24px; font-weight: 700; color: #4f66ff; margin-bottom: 40px; padding: 0 10px; display: flex; align-items: center; gap: 10px; }
+.brand a { color: #4f66ff; text-decoration: none; }
+.nav-item { padding: 14px 20px; border-radius: 14px; color: #aab4d6; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.nav-item:hover { background: rgba(255,255,255,0.04); color: white; }
+.nav-item.active { background: linear-gradient(135deg, rgba(79,102,255,0.2), rgba(123,92,255,0.1)); color: #9eb1ff; border: 1px solid rgba(79,102,255,0.2); }
+
+.tab-pane { display: none; animation: fadeIn 0.3s forwards; }
+.tab-pane.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-h { font-size: 32px; font-weight: 700; color: white; margin-bottom: 5px; }
+.page-s { color: #7f8aa8; font-size: 15px; margin-bottom: 30px; }
+
+/* Shared UI Components */
+.card { background: rgba(17,24,39,0.8); border-radius: 20px; padding: 24px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 0 28px rgba(0,0,0,0.35); }
+.card-h { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.cnt { background: #4f66ff; color: white; border-radius: 7px; padding: 2px 8px; font-size: 12px; }
+
+lbl { display: block; color: #aab4d6; font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+.fi, .si, .ti { width: 100%; background: #1b2435; border: 1.5px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 16px; color: white; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s; margin-bottom: 16px; }
+.fi:focus, .si:focus, .ti:focus { border-color: #4f66ff; }
+.si option { background: #1b2435; }
+.ti { resize: vertical; min-height: 80px; }
+
+.btn { border: none; cursor: pointer; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: 'Poppins', sans-serif; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-p { background: linear-gradient(135deg, #4f66ff, #7b5cff); color: white; width: 100%; }
+.btn-p:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(79,102,255,0.4); }
+.btn-s { background: #1b2435; color: #dbe4ff; padding: 8px 16px; font-size: 13px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+.btn-s:hover { background: #2d374d; }
+.btn-d { background: rgba(239,68,68,0.15); color: #ef4444; padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-d:hover { background: rgba(239,68,68,0.28); }
+
+.err-msg { color: #ff7b7b; font-size: 13px; margin-top: 8px; min-height: 18px; }
+.ok-msg { color: #22c55e; font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+.grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 30px; align-items: start; }
+@media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Calendar specific */
+.prog-bar { background: rgba(17,24,39,0.8); border-radius: 16px; padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border: 1px solid rgba(255,255,255,0.06); }
+.prog-bar label { color: #aab4d6; font-size: 14px; font-weight: 500; }
+.prog-bar select { flex: 1; min-width: 200px; margin-bottom: 0; }
+
+.ev-list { display: flex; flex-direction: column; gap: 10px; }
+.ev-row { background: rgba(27,36,53,0.5); border-radius: 14px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; border-left: 4px solid transparent; border: 1px solid rgba(255,255,255,0.03); border-left-width: 4px; }
+.ev-left { flex: 1; min-width: 0; }
+.ev-date { font-size: 12px; color: #7f8aa8; font-weight: 600; margin-bottom: 4px; }
+.ev-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: white; }
+.ev-desc { font-size: 13px; color: #aab4d6; }
+.ev-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-top: 6px; }
+
+.empty { text-align: center; padding: 40px; color: #7f8aa8; }
+.empty .ico { font-size: 40px; margin-bottom: 12px; }
+
+/* Professor specific */
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.prof-card { background: rgba(27,36,53,0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.prof-name { font-size: 16px; font-weight: 600; color: white; }
+.prof-role { font-size: 13px; color: #4f66ff; font-weight: 500; }
+.prof-email { font-size: 13px; color: #aab4d6; }
+</style>
+</head>
+<body>
+<div class="glow glow1"></div><div class="glow glow2"></div>
+
+<!-- Lock -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">Admin Access</div>
+    <div class="lock-sub">UniCompass Universal Management</div>
+    <input class="fi" type="email" id="emailInput" value="admin@unicompass.com" placeholder="Admin Email" style="margin-bottom:12px;">
+    <input class="fi" type="password" id="pwdInput" placeholder="Admin Password" style="margin-bottom:20px;" onkeydown="if(event.key==='Enter')checkPwd()">
+    <button class="btn btn-p" onclick="checkPwd()">Unlock Dashboard</button>
+    <div class="lock-err" id="pwdErr"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand"><a href="index.html">← UniCompass</a></div>
+    
+    <div class="nav-item active" onclick="switchTab('calendar', this)">
+      📅 Academic Calendar
+    </div>
+    <div class="nav-item" onclick="switchTab('professors', this)">
+      👨‍🏫 Professor Directory
+    </div>
+    
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <button class="btn btn-s" style="width: 100%; color: #ef4444;" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Tab 1: Calendar -->
+    <div id="tab-calendar" class="tab-pane active">
+      <div class="page-h">Calendar Management</div>
+      <div class="page-s">Manage academic calendars across all programs</div>
+
+      <div class="prog-bar">
+        <label>Program:</label>
+        <select class="si" id="adminProg" onchange="onProgChange()">
+          <option value="">— Select program to edit —</option>
+        </select>
+        <button class="btn btn-s" onclick="clearAll()">🗑 Clear Events</button>
+        <a href="academic-calendar.html" target="_blank" class="btn btn-s" style="text-decoration:none;">👁 Preview Live</a>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">✏️ Add Event <span class="cnt" id="cntBadge">0</span></div>
+          <lbl>Date</lbl>
+          <input class="fi" type="date" id="evDate">
+          <lbl>Title</lbl>
+          <input class="fi" type="text" id="evTitle" placeholder="e.g. CIA - I, Independence Day">
+          <lbl>Type</lbl>
+          <select class="si" id="evType">
+            <option value="academic">Academic</option>
+            <option value="exam">Exam</option>
+            <option value="holiday">Holiday</option>
+            <option value="deadline">Deadline</option>
+            <option value="result">Result</option>
+            <option value="event">Event</option>
+          </select>
+          <lbl>Description (optional)</lbl>
+          <textarea class="ti" id="evDesc" placeholder="Brief description..."></textarea>
+          <lbl>Apply to Program(s)</lbl>
+          <select class="si" id="evApplyTo" multiple style="height:140px;">
+          </select>
+          <div style="color:#7f8aa8; font-size:12px; margin-top:-8px; margin-bottom:16px;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</div>
+          <button class="btn btn-p" onclick="addEvent()">+ Add Event</button>
+          <div class="err-msg" id="addErr"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">📋 Live Events <span id="progLabel" style="color:#7f8aa8;font-size:14px;font-weight:400;margin-left:auto;">— select a program</span></div>
+          <div id="eventList"><div class="empty"><div class="ico">📅</div>Select a program and add events</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Professors -->
+    <div id="tab-professors" class="tab-pane">
+      <div class="page-h">Professor Directory</div>
+      <div class="page-s">Manage the faculty database for Professor Finder</div>
+
+      <div class="prog-bar" style="justify-content: space-between;">
+          <div style="color:#22c55e; font-size:14px; font-weight:500;">
+              🟢 Connected to Firestore.
+          </div>
+          <button class="btn btn-s" onclick="migrateProfessors()" id="migBtn">🚀 One-Time: Migrate JSON to Firebase</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">✏️ Add / Edit Professor</div>
+          <input type="hidden" id="profId">
+          <lbl>Full Name</lbl>
+          <input class="fi" type="text" id="profName" placeholder="e.g. Dr. Jane Doe">
+          <lbl>Role / Position</lbl>
+          <input class="fi" type="text" id="profRole" placeholder="e.g. Associate Professor">
+          <lbl>Department</lbl>
+          <input class="fi" type="text" id="profDept" placeholder="e.g. Computer Science">
+          <lbl>Email Address</lbl>
+          <input class="fi" type="email" id="profEmail" placeholder="e.g. jane.doe@snu.edu.in">
+          
+          <div style="display:flex; gap:10px;">
+              <button class="btn btn-p" id="profSaveBtn" onclick="saveProfessor()">+ Add Professor</button>
+              <button class="btn btn-s" id="profCancelBtn" onclick="resetProfForm()" style="display:none;">Cancel</button>
+          </div>
+          <div class="err-msg" id="profErr"></div>
+        </div>
+
+        <div class="card" style="grid-column: span 1; overflow: hidden; display: flex; flex-direction: column; max-height: 800px;">
+          <div class="card-h">👨‍🏫 Faculty List <span class="cnt" id="profCount">0</span></div>
+          <input class="fi" type="text" id="profSearch" placeholder="Search professors..." onkeyup="renderProfessors()" style="margin-bottom:20px;">
+          <div id="profList" class="prof-grid" style="overflow-y: auto; padding-right: 10px; padding-bottom: 20px;"><div class="empty"><div class="ico">⏳</div>Loading professors...</div></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+if (!firebase.apps.length) { firebase.initializeApp(FIREBASE_CONFIG); }
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ---- Navigation ---- */
+function switchTab(tabId, el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+/* ---- Auth ---- */
+function checkPwd() {
+    const err = document.getElementById("pwdErr");
+    const email = document.getElementById("emailInput").value.trim();
+    const pwd = document.getElementById("pwdInput").value;
+    if(!email || !pwd) { err.textContent = "Enter email and password."; return; }
+    
+    err.textContent = "Authenticating...";
+    
+    auth.signInWithEmailAndPassword(email, pwd)
+        .then(() => {
+            document.getElementById("lockScreen").style.display = "none";
+            document.getElementById("dashboard").style.display  = "flex";
+            initCalendar();
+            loadProfessors();
+        })
+        .catch(error => {
+            err.textContent = "Invalid admin credentials: " + error.message;
+            document.getElementById("pwdInput").value = "";
+        });
+}
+
+function logout() {
+    auth.signOut().then(() => {
+        window.location.reload();
+    });
+}
+
+/* ==========================================
+   CALENDAR MANAGEMENT
+   ========================================== */
+const PROGRAMS = [
+    {slug:"btech-cse",     label:"B.Tech — Computer Science and Engineering"},
+    {slug:"btech-aids",    label:"B.Tech — Artificial Intelligence & Data Science"},
+    {slug:"btech-cse-iot", label:"B.Tech — CSE (Internet of Things)"},
+    {slug:"btech-cse-cs",  label:"B.Tech — CSE (Cyber Security)"},
+    {slug:"btech-eee",     label:"B.Tech — Electrical and Electronics Engineering"},
+    {slug:"btech-ece",     label:"B.Tech — Electronics and Communication Engineering"},
+    {slug:"btech-ece-vlsi",label:"B.Tech — ECE (VLSI Design and Technology)"},
+    {slug:"btech-it",      label:"B.Tech — Information Technology"},
+    {slug:"bcom",          label:"B.Com"},
+    {slug:"bcom-hons",     label:"B.Com — Honours"},
+    {slug:"bcom-pa",       label:"B.Com — Professional Accounting"},
+    {slug:"bsc-econ",      label:"B.Sc — Economics (Data Science)"},
+    {slug:"ballb",         label:"B.A., LL.B"},
+    {slug:"mtech-aids",    label:"M.Tech — AI and Data Science"},
+    {slug:"mtech-cse",     label:"M.Tech — Computer Science and Engineering"},
+    {slug:"mtech-it",      label:"M.Tech — Information Technology"},
+    {slug:"mtech-pe",      label:"M.Tech — Power Electronics and Drives"},
+    {slug:"mtech-vlsi",    label:"M.Tech — VLSI Design"},
+    {slug:"mtech-wct",     label:"M.Tech — Wireless Communication Technology"},
+    {slug:"mba",           label:"MBA"},
+    {slug:"phd",           label:"Ph.D"}
+];
+
+const TYPE_COLOR = {academic:"#4f66ff",exam:"#a855f7",holiday:"#f97316",deadline:"#ef4444",result:"#22c55e",event:"#14b8a6"};
+const TYPE_BG    = {academic:"rgba(79,102,255,0.18)",exam:"rgba(168,85,247,0.18)",holiday:"rgba(249,115,22,0.18)",deadline:"rgba(239,68,68,0.18)",result:"rgba(34,197,94,0.18)",event:"rgba(20,184,166,0.18)"};
+
+let calSlug = "";
+let calLabel = "";
+let calEvents = [];
+
+function initCalendar() {
+    const sel = document.getElementById("adminProg");
+    const multiSel = document.getElementById("evApplyTo");
+    PROGRAMS.forEach(p => {
+        sel.appendChild(new Option(p.label, p.slug));
+        multiSel.appendChild(new Option(p.label, p.slug));
+    });
+}
+
+async function onProgChange() {
+    const sel = document.getElementById("adminProg");
+    calSlug  = sel.value;
+    calLabel = sel.options[sel.selectedIndex]?.text || "";
+    document.getElementById("progLabel").textContent = (calLabel || "— select a program") + " (Loading...)";
+
+    const applyTo = document.getElementById("evApplyTo");
+    if(applyTo) {
+        for(let i=0; i<applyTo.options.length; i++) {
+            applyTo.options[i].selected = (applyTo.options[i].value === calSlug);
+        }
+    }
+
+    if (!calSlug) {
+        calEvents = [];
+        document.getElementById("progLabel").textContent = "— select a program";
+        renderCalendar();
+        return;
+    }
+
+    try {
+        const doc = await db.collection("calendars").doc(calSlug).get();
+        if (doc.exists) { calEvents = doc.data().events || []; } 
+        else { calEvents = []; }
+        document.getElementById("progLabel").textContent = calLabel;
+    } catch (e) {
+        calEvents = [];
+        document.getElementById("progLabel").textContent = calLabel + " (Error loading)";
+    }
+    renderCalendar();
+}
+
+function addEvent() {
+    const err = document.getElementById("addErr");
+    err.className = "err-msg"; err.textContent = "";
+
+    const multiSel = document.getElementById("evApplyTo");
+    const selectedSlugs = Array.from(multiSel.selectedOptions).map(o => o.value);
+
+    if(!selectedSlugs.length) { err.textContent = "Select at least one program."; return; }
+
+    const date  = document.getElementById("evDate").value;
+    const title = document.getElementById("evTitle").value.trim();
+    const type  = document.getElementById("evType").value;
+    const desc  = document.getElementById("evDesc").value.trim();
+    if(!date)  { err.textContent = "Pick a date."; return; }
+    if(!title) { err.textContent = "Enter a title."; return; }
+
+    err.className = "ok-msg"; err.style.color = "#9eb1ff"; err.textContent = "⏳ Saving to Firestore...";
+
+    Promise.all(selectedSlugs.map(async s => {
+        const docRef = db.collection("calendars").doc(s);
+        const doc = await docRef.get();
+        let pEvents = doc.exists ? (doc.data().events || []) : [];
+        pEvents.push({date, title, type, description: desc});
+        pEvents.sort((a,b) => a.date.localeCompare(b.date));
+        
+        const prog = PROGRAMS.find(p => p.slug === s);
+        return docRef.set({
+            program: prog?.label || "",
+            degree: (prog?.label || "").split("—")[0].trim(),
+            academicYear: new Date().getFullYear() + "-" + (new Date().getFullYear() + 1),
+            lastUpdated: new Date().toISOString().split("T")[0],
+            events: pEvents
+        }, { merge: true });
+    })).then(() => {
+        onProgChange();
+        document.getElementById("evDate").value  = "";
+        document.getElementById("evTitle").value = "";
+        document.getElementById("evDesc").value  = "";
+        err.className = "ok-msg"; err.style.color = ""; err.textContent = `✅ Added event to ${selectedSlugs.length} program(s)`;
+        setTimeout(() => err.textContent = "", 3000);
+    }).catch(e => {
+        err.className = "err-msg"; err.style.color = ""; err.textContent = "❌ Error saving: " + e.message;
+    });
+}
+
+function deleteEvent(i) { calEvents.splice(i, 1); saveCalendar(); }
+function clearAll() { if(!calSlug || !confirm("Clear all events for " + calLabel + "?")) return; calEvents = []; saveCalendar(); }
+
+function saveCalendar() {
+    if(!calSlug) return;
+    const prog = PROGRAMS.find(p => p.slug === calSlug);
+    db.collection("calendars").doc(calSlug).set({
+        program: prog?.label || calLabel,
+        degree: (prog?.label || "").split("—")[0].trim(),
+        academicYear: new Date().getFullYear() + "-" + (new Date().getFullYear() + 1),
+        lastUpdated: new Date().toISOString().split("T")[0],
+        events: calEvents
+    }, { merge: true }).then(() => renderCalendar()).catch(e => alert("Error saving: " + e.message));
+}
+
+function renderCalendar() {
+    document.getElementById("cntBadge").textContent = calEvents.length;
+    const el = document.getElementById("eventList");
+    if(!calSlug || !calEvents.length) {
+        el.innerHTML = `<div class="empty"><div class="ico">📅</div>${calSlug ? "No events yet." : "Select a program."}</div>`;
+        return;
+    }
+    el.innerHTML = "";
+    const wrap = document.createElement("div"); wrap.className = "ev-list";
+    calEvents.forEach((e, i) => {
+        const c  = TYPE_COLOR[e.type] || "#aab4d6";
+        const bg = TYPE_BG[e.type]   || "rgba(170,180,214,0.15)";
+        const d  = new Date(e.date + "T00:00:00");
+        const dl = d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+        const row = document.createElement("div"); row.className = "ev-row"; row.style.borderLeftColor = c;
+        row.innerHTML = `
+            <div class="ev-left">
+                <div class="ev-date">${dl}</div>
+                <div class="ev-title">${e.title}</div>
+                ${e.description ? `<div class="ev-desc">${e.description}</div>` : ""}
+                <span class="ev-badge" style="background:${bg};color:${c};">${e.type.toUpperCase()}</span>
+            </div>
+            <div class="ev-actions"><button class="btn btn-d" onclick="deleteEvent(${i})">✕</button></div>`;
+        wrap.appendChild(row);
+    });
+    el.appendChild(wrap);
+}
+
+/* ==========================================
+   PROFESSOR MANAGEMENT
+   ========================================== */
+let allProfessors = [];
+
+async function loadProfessors() {
+    try {
+        const snap = await db.collection("professors").orderBy("name").get();
+        allProfessors = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProfessors();
+        if(allProfessors.length > 0) document.getElementById("migBtn").style.display = "none";
+    } catch (e) { console.error("Error loading professors", e); }
+}
+
+function renderProfessors() {
+    const query = document.getElementById("profSearch").value.toLowerCase();
+    const filtered = allProfessors.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.department && p.department.toLowerCase().includes(query))
+    );
+    
+    document.getElementById("profCount").textContent = filtered.length;
+    const el = document.getElementById("profList");
+    
+    if(!filtered.length) {
+        el.innerHTML = `<div class="empty" style="grid-column: 1/-1;"><div class="ico">👨‍🏫</div>No professors found.</div>`;
+        return;
+    }
+    
+    el.innerHTML = "";
+    filtered.forEach(p => {
+        const card = document.createElement("div"); card.className = "prof-card";
+        card.innerHTML = `
+            <div>
+                <div class="prof-name">${p.name}</div>
+                <div class="prof-role">${p.role || 'Professor'} • ${p.department || 'General'}</div>
+                <div class="prof-email">✉️ ${p.email}</div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:4px;">
+                <button class="btn btn-s" onclick="editProfessor('${p.id}')">Edit</button>
+                <button class="btn btn-d" onclick="deleteProfessor('${p.id}')">Delete</button>
+            </div>
+        `;
+        el.appendChild(card);
+    });
+}
+
+function editProfessor(id) {
+    const p = allProfessors.find(x => x.id === id);
+    if(!p) return;
+    document.getElementById("profId").value = p.id;
+    document.getElementById("profName").value = p.name || "";
+    document.getElementById("profRole").value = p.role || "";
+    document.getElementById("profDept").value = p.department || "";
+    document.getElementById("profEmail").value = p.email || "";
+    
+    document.getElementById("profSaveBtn").textContent = "Save Changes";
+    document.getElementById("profCancelBtn").style.display = "block";
+    document.getElementById("profName").focus();
+}
+
+function resetProfForm() {
+    document.getElementById("profId").value = "";
+    document.getElementById("profName").value = "";
+    document.getElementById("profRole").value = "";
+    document.getElementById("profDept").value = "";
+    document.getElementById("profEmail").value = "";
+    document.getElementById("profSaveBtn").textContent = "+ Add Professor";
+    document.getElementById("profCancelBtn").style.display = "none";
+}
+
+async function saveProfessor() {
+    const err = document.getElementById("profErr");
+    const id = document.getElementById("profId").value;
+    const name = document.getElementById("profName").value.trim();
+    const role = document.getElementById("profRole").value.trim();
+    const department = document.getElementById("profDept").value.trim();
+    const email = document.getElementById("profEmail").value.trim();
+
+    if(!name || !email) { err.textContent = "Name and Email are required."; return; }
+    err.className = "ok-msg"; err.style.color = "#9eb1ff"; err.textContent = "⏳ Saving...";
+
+    try {
+        if(id) {
+            await db.collection("professors").doc(id).update({ name, role, department, email });
+        } else {
+            await db.collection("professors").add({ name, role, department, email });
+        }
+        resetProfForm();
+        await loadProfessors();
+        err.className = "ok-msg"; err.style.color = ""; err.textContent = "✅ Saved successfully!";
+        setTimeout(() => err.textContent = "", 3000);
+    } catch(e) {
+        err.className = "err-msg"; err.style.color = ""; err.textContent = "❌ " + e.message;
+    }
+}
+
+async function deleteProfessor(id) {
+    if(!confirm("Delete this professor?")) return;
+    try {
+        await db.collection("professors").doc(id).delete();
+        await loadProfessors();
+    } catch(e) { alert("Error deleting: " + e.message); }
+}
+
+async function migrateProfessors() {
+    const btn = document.getElementById("migBtn");
+    btn.disabled = true; btn.textContent = "Migrating...";
+    try {
+        const res = await fetch("professors.json");
+        const data = await res.json();
+        let batch = db.batch();
+        let count = 0;
+        
+        for (let p of data) {
+            const ref = db.collection("professors").doc();
+            batch.set(ref, p);
+            count++;
+            if (count === 500) { await batch.commit(); batch = db.batch(); count = 0; }
+        }
+        if (count > 0) await batch.commit();
+        alert("Migration complete! You can now safely delete professors.json");
+        btn.style.display = "none";
+        loadProfessors();
+    } catch(e) { alert("Migration failed: " + e.message); btn.textContent = "Failed. Try again"; }
+}
+</script>
+</body>
+</html>

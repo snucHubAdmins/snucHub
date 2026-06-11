@@ -365,14 +365,16 @@ async function loadProfessors()
 {
     try
     {
-        const response =
-            await fetch("professors.json");
+        if (!window.firebase || !firebase.firestore) {
+            setTimeout(loadProfessors, 100);
+            return;
+        }
 
-        professors =
-            await response.json();
+        const db = firebase.firestore();
+        const snap = await db.collection("professors").orderBy("name").get();
+        professors = snap.docs.map(doc => doc.data());
 
         populateDepartments();
-
         renderProfessors(professors);
     }
 
