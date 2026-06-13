@@ -166,26 +166,22 @@ function togglePredictMode() {
 
     if(predict) {
         predictGrid.style.display = "grid";
-        gradeHeader.style.display = "none";
-        document.getElementById("tableHeader").style.gridTemplateColumns = "2fr 1fr 40px";
-        
+        gradeHeader.innerHTML = "Expected Range";
         rows.forEach(row => {
-            row.style.gridTemplateColumns = "2fr 1fr 40px";
             if(row.querySelector(".grade")) row.querySelector(".grade").style.display = "none";
+            if(row.querySelector(".expected-grade")) row.querySelector(".expected-grade").style.display = "block";
         });
     } else {
         predictGrid.style.display = "none";
-        gradeHeader.style.display = "block";
-        document.getElementById("tableHeader").style.gridTemplateColumns = "2fr 1fr 1fr 40px";
-        
+        gradeHeader.innerHTML = "Grade";
         rows.forEach(row => {
-            row.style.gridTemplateColumns = "2fr 1fr 1fr 40px";
             if(row.querySelector(".grade")) row.querySelector(".grade").style.display = "block";
+            if(row.querySelector(".expected-grade")) row.querySelector(".expected-grade").style.display = "none";
         });
     }
 }
 
-function addRow(course = '', cred = '', gradeVal = '10') {
+function addRow(course = '', cred = '', gradeVal = '10', expectedVal = 'any') {
     const container = document.getElementById("rows-container");
     const predict = document.getElementById("predictMode").checked;
     const row = document.createElement("div");
@@ -201,6 +197,14 @@ function addRow(course = '', cred = '', gradeVal = '10') {
             <option value="6">B</option>
             <option value="5">P</option>
         </select>
+        <select class="expected-grade" style="display:none;">
+            <option value="any">Any Grade</option>
+            <option value="9-10">9 to 10 (A+ to O)</option>
+            <option value="8-10">8 to 10 (A to O)</option>
+            <option value="8-9">8 to 9 (A to A+)</option>
+            <option value="7-8">7 to 8 (B+ to A)</option>
+            <option value="10">Exactly 10 (O)</option>
+        </select>
     `;
 
     row.innerHTML = `
@@ -210,14 +214,14 @@ function addRow(course = '', cred = '', gradeVal = '10') {
         <button class="delete-btn" onclick="deleteRow(this)" title="Remove Course">🗑️</button>
     `;
 
+    row.querySelector(".grade").value = gradeVal;
+    row.querySelector(".expected-grade").value = expectedVal;
+    
     if(predict) {
-        row.style.gridTemplateColumns = "2fr 1fr 40px";
         row.querySelector(".grade").style.display = "none";
-    } else {
-        row.style.gridTemplateColumns = "2fr 1fr 1fr 40px";
+        row.querySelector(".expected-grade").style.display = "block";
     }
 
-    row.querySelector(".grade").value = gradeVal;
     container.appendChild(row);
     saveData();
 }
@@ -232,12 +236,22 @@ function deleteRow(btn) {
     }, 200);
 }
 
-// Recursive backtracking to find mathematically valid grade combinations
+// Recursive backtracking to find mathematically valid grade combinations within constraints
 function findGradeCombinations(courses, targetPoints) {
     const gradeOptions = [
-        {val: 10, name: 'O'}, {val: 9, name: 'A+'}, {val: 8, name: 'A'},
-        {val: 7, name: 'B+'}, {val: 6, name: 'B'}, {val: 5, name: 'P'}
+        {val: 5, name: 'P'}, {val: 6, name: 'B'}, {val: 7, name: 'B+'},
+        {val: 8, name: 'A'}, {val: 9, name: 'A+'}, {val: 10, name: 'O'}
     ];
+    
+    const constraintsMap = {
+        "any": [10, 9, 8, 7, 6, 5],
+        "9-10": [10, 9],
+        "8-10": [10, 9, 8],
+        "8-9": [9, 8],
+        "7-8": [8, 7],
+        "10": [10]
+    };
+
     let results = [];
     
     function search(index, currentPoints, currentCombo) {
@@ -254,7 +268,11 @@ function findGradeCombinations(courses, targetPoints) {
             return;
         }
         
+        const allowedGrades = constraintsMap[courses[index].expected] || constraintsMap["any"];
+        
         for (let g of gradeOptions) {
+            if (!allowedGrades.includes(g.val)) continue; // Respect the constraint
+            
             currentCombo.push(g.name);
             search(index + 1, currentPoints + (g.val * courses[index].credits), currentCombo);
             currentCombo.pop();
@@ -307,12 +325,19 @@ function calculateGPA() {
             return;
         }
 
+        const expectedGrades = document.querySelectorAll(".expected-grade");
         let futureCredits = 0;
         let futureCourses = [];
+        
         for(let i = 0; i < credits.length; i++) {
             let c = parseFloat(credits[i].value) || 0;
             futureCredits += c;
-            if(c > 0) futureCourses.push({credits: c});
+            if(c > 0) {
+                futureCourses.push({
+                    credits: c,
+                    expected: expectedGrades[i].value
+                });
+            }
         }
 
         if(futureCredits === 0) {
@@ -342,7 +367,7 @@ function calculateGPA() {
         let resultHTML = `<div class="combo" style="background:rgba(79,102,255,0.15); border:1px solid #4f66ff;">Minimum average required: <b>${requiredGPA.toFixed(2)}</b></div>`;
 
         if(options.length === 0) {
-            resultHTML += `<div class="combo" style="color:#ff7d7d;">Target is achievable on average, but no valid grade combination precisely fits these specific course credits. You might need to score perfectly.</div>`;
+            resultHTML += `<div class="combo" style="color:#ff7d7d;">No valid grade combination was found. This target is either mathematically impossible, or your Expected Grade constraints are too strict.</div>`;
         } else {
             options.forEach((option, index) => {
                 resultHTML += `
@@ -371,7 +396,8 @@ function saveData() {
         data.rows.push({
             course: row.querySelector('input[type="text"]').value,
             credits: row.querySelector('.credits').value,
-            grade: row.querySelector('.grade') ? row.querySelector('.grade').value : "10"
+            grade: row.querySelector('.grade') ? row.querySelector('.grade').value : "10",
+            expected: row.querySelector('.expected-grade') ? row.querySelector('.expected-grade').value : "any"
         });
     });
     
@@ -391,7 +417,7 @@ function loadData() {
             document.getElementById('completedCredits').value = data.completedCredits || '';
             document.getElementById('targetCGPA').value = data.targetCGPA || '';
             
-            data.rows.forEach(r => addRow(r.course, r.credits, r.grade));
+            data.rows.forEach(r => addRow(r.course, r.credits, r.grade, r.expected));
             togglePredictMode();
         } catch(e) {
             initDefaultRows();
@@ -402,9 +428,9 @@ function loadData() {
 }
 
 function initDefaultRows() {
-    addRow('', '', '10');
-    addRow('', '', '10');
-    addRow('', '', '10');
+    addRow('', '', '10', 'any');
+    addRow('', '', '10', 'any');
+    addRow('', '', '10', 'any');
 }
 
 function clearAll() {
