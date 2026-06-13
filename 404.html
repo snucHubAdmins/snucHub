@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found · UniCompass</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+body { background: #081225; color: white; min-height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; }
+.glow { position: absolute; width: 600px; height: 600px; background: #4f66ff; opacity: 0.1; border-radius: 50%; filter: blur(120px); z-index: -1; }
+.container { max-width: 600px; padding: 40px; position: relative; z-index: 10; }
+.error-code { font-size: 120px; font-weight: 700; background: linear-gradient(135deg, #4f66ff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 20px; }
+.error-title { font-size: 32px; font-weight: 600; margin-bottom: 16px; }
+.error-desc { color: #aab4d6; font-size: 18px; margin-bottom: 40px; line-height: 1.6; }
+.home-btn { background: linear-gradient(135deg, #4f66ff, #7b5cff); color: white; text-decoration: none; padding: 14px 32px; border-radius: 14px; font-size: 16px; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+.home-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(79, 102, 255, 0.4); }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="container">
+    <div class="error-code">404</div>
+    <div class="error-title">Looks like you're lost.</div>
+    <div class="error-desc">The page you are looking for doesn't exist or has been moved to a new location.</div>
+    <a href="/unicompass/index.html" class="home-btn">← Back to Dashboard</a>
+</div>
+</body>
+</html>

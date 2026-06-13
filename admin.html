@@ -295,7 +295,11 @@ function checkPwd() {
     err.textContent = "Authenticating...";
     
     auth.signInWithEmailAndPassword(email, pwd)
-        .then(() => {
+        .then((cred) => {
+            if (cred.user.email !== "admin@unicompass.com") {
+                auth.signOut();
+                throw new Error("Unauthorized: Not an admin account.");
+            }
             document.getElementById("lockScreen").style.display = "none";
             document.getElementById("dashboard").style.display  = "flex";
             initCalendar();
