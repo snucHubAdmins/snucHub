@@ -410,18 +410,20 @@
     }
 }
 
-/* ---------- Premium Logo Back Button ---------- */
-.logo-wrap {
+/* ---------- Premium Back To Dashboard Button ---------- */
+.uc-back-btn {
     display: inline-flex;
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: white;
+    color: #aab4d6;
     margin-bottom: 35px;
     transition: 0.2s;
+    font-size: 16px;
+    font-weight: 500;
 }
 
-.back-arrow {
+.uc-back-btn .back-arrow {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -434,17 +436,13 @@
     font-size: 18px;
 }
 
-.logo-wrap:hover .back-arrow {
+.uc-back-btn:hover {
+    color: white;
+}
+
+.uc-back-btn:hover .back-arrow {
     background: #4f66ff;
     color: white;
     transform: translateX(-4px);
     box-shadow: 0 4px 12px rgba(79, 102, 255, 0.3);
-}
-
-.logo-text {
-    font-size: 28px;
-    font-weight: 700;
-    color: #4f66ff;
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: -0.5px;
 }
