@@ -409,23 +409,39 @@
         font-size: 14px;
 }
 
-/* ---------- Back Button ---------- */
+/* ---------- Premium Back Button ---------- */
 .uc-back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #aab4d6;
     text-decoration: none;
+    font-size: 14px;
     font-weight: 500;
-    margin-bottom: 20px;
-    transition: 0.2s;
-    background: #1b2435;
-    padding: 10px 18px;
-    border-radius: 12px;
+    padding: 10px 20px;
+    border-radius: 14px;
+    margin-bottom: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
 }
 
 .uc-back-btn:hover {
-    color: white;
     background: #4f66ff;
-    transform: translateX(-5px);
+    color: white;
+    border-color: #4f66ff;
+    transform: translateX(-4px);
+    box-shadow: 0 4px 15px rgba(79, 102, 255, 0.3);
+}
+
+.uc-back-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    transition: transform 0.3s;
+}
+
+.uc-back-btn:hover svg {
+    transform: translateX(-3px);
 }
