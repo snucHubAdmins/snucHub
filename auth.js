@@ -1,13 +1,3 @@
-/* ============================================================
-   AUTH.JS — snucHub Firebase Auth System
-   ============================================================
-   HOW TO ACTIVATE:
-   1. Go to https://console.firebase.google.com
-   2. Create a project → Add a Web App → Copy the firebaseConfig
-   3. Enable Authentication → Sign-in method → Email/Password
-   4. Enable Firestore Database (start in test mode)
-   5. Replace the firebaseConfig object below with your own
-   ============================================================ */
 
 /* ---------- SNU Chennai Programs ---------- */
 
@@ -209,12 +199,12 @@ function injectHTML() {
                 </div>
 
                 <div class="uc-form-group">
-                    <label class="uc-label">SNU Email</label>
+                    <label class="uc-label">SNU Email ID <span style="color:#7f8aa8;font-size:12px;">(without @snuchennai.edu.in)</span></label>
                     <input
                         class="uc-input"
                         id="uc-reg-email"
-                        type="email"
-                        placeholder="e.g. 23110001@snuchennai.edu.in"
+                        type="text"
+                        placeholder="e.g. lakshith25110123"
                     >
                 </div>
 
@@ -468,7 +458,7 @@ function ucSwitchTab(tab) {
 
 async function ucRegister() {
     const roll  = document.getElementById("uc-reg-roll").value.trim();
-    const email = document.getElementById("uc-reg-email").value.trim().toLowerCase();
+    const emailPrefix = document.getElementById("uc-reg-email").value.trim().toLowerCase();
     const pass  = document.getElementById("uc-reg-pass").value;
     const pass2 = document.getElementById("uc-reg-pass2").value;
     const errEl = document.getElementById("uc-reg-error");
@@ -481,10 +471,12 @@ async function ucRegister() {
         return;
     }
 
-    if (!email || !email.includes("@")) {
-        errEl.textContent = "Please enter a valid SNU email.";
+    if (!emailPrefix || emailPrefix.includes("@")) {
+        errEl.textContent = "Please enter just the email prefix (without @snuchennai.edu.in).";
         return;
     }
+    
+    const email = emailPrefix + "@snuchennai.edu.in";
 
     if (pass.length < 6) {
         errEl.textContent = "Password must be at least 6 characters.";
@@ -555,22 +547,21 @@ async function ucLogin() {
         let isRollNumber = /^\d{8}$/.test(loginId);
         
         if (isRollNumber) {
-            authEmail = loginId + "@snuchennai.edu.in";
+            try {
+                const snap = await _ucDb.collection("users").where("rollNumber", "==", loginId).limit(1).get();
+                if (!snap.empty) {
+                    authEmail = snap.docs[0].data().email;
+                } else {
+                    authEmail = loginId + "@snuchennai.edu.in";
+                }
+            } catch (e) {
+                authEmail = loginId + "@snuchennai.edu.in";
+            }
         } else if (!loginId.includes("@")) {
-            throw { code: "auth/invalid-email" };
+            authEmail = loginId + "@snuchennai.edu.in";
         }
 
-        try {
-            await _ucAuth.signInWithEmailAndPassword(authEmail, pass);
-        } catch (err) {
-            if (isRollNumber && (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password")) {
-                // Try legacy email format for older accounts
-                const legacyEmail = loginId + "@student.snuchennai.edu.in";
-                await _ucAuth.signInWithEmailAndPassword(legacyEmail, pass);
-            } else {
-                throw err;
-            }
-        }
+        await _ucAuth.signInWithEmailAndPassword(authEmail, pass);
 
         ucCloseAuth();
 
