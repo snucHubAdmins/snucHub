@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "unicompass-1c9cc"
-  }
+  },
+  "targets": {
+    "unicompass-1c9cc": {
+      "hosting": {
+        "snuchub": [
+          "snuchub"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
