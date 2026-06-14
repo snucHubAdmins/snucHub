@@ -155,7 +155,7 @@ function injectHTML() {
             <button class="uc-modal-close" id="uc-auth-close">✕</button>
 
             <div class="uc-modal-logo">snucHub</div>
-            <div class="uc-modal-subtitle">Sign in with your SNU Roll Number</div>
+            <div class="uc-modal-subtitle">Sign in with your Roll Number or SNU Email</div>
 
             <!-- Tabs -->
             <div class="uc-tabs">
@@ -167,13 +167,12 @@ function injectHTML() {
             <div id="uc-login-form">
 
                 <div class="uc-form-group">
-                    <label class="uc-label">Roll Number</label>
+                    <label class="uc-label">Roll Number or Email</label>
                     <input
                         class="uc-input"
                         id="uc-login-roll"
                         type="text"
-                        maxlength="8"
-                        placeholder="e.g. 23110001"
+                        placeholder="e.g. 23110001 or email"
                     >
                 </div>
 
@@ -206,6 +205,16 @@ function injectHTML() {
                         type="text"
                         maxlength="8"
                         placeholder="e.g. 23110001"
+                    >
+                </div>
+
+                <div class="uc-form-group">
+                    <label class="uc-label">SNU Email</label>
+                    <input
+                        class="uc-input"
+                        id="uc-reg-email"
+                        type="email"
+                        placeholder="e.g. 23110001@student.snuchennai.edu.in"
                     >
                 </div>
 
@@ -459,6 +468,7 @@ function ucSwitchTab(tab) {
 
 async function ucRegister() {
     const roll  = document.getElementById("uc-reg-roll").value.trim();
+    const email = document.getElementById("uc-reg-email").value.trim().toLowerCase();
     const pass  = document.getElementById("uc-reg-pass").value;
     const pass2 = document.getElementById("uc-reg-pass2").value;
     const errEl = document.getElementById("uc-reg-error");
@@ -468,6 +478,11 @@ async function ucRegister() {
     /* Validation */
     if (!/^\d{8}$/.test(roll)) {
         errEl.textContent = "Roll number must be exactly 8 digits.";
+        return;
+    }
+
+    if (!email || !email.includes("@")) {
+        errEl.textContent = "Please enter a valid SNU email.";
         return;
     }
 
@@ -486,14 +501,12 @@ async function ucRegister() {
     btn.textContent = "Creating account...";
 
     try {
-        /* Firebase uses email under the hood — we derive one from roll number */
-        const fakeEmail = roll + "@student.snuchennai.edu.in";
-
-        const cred = await _ucAuth.createUserWithEmailAndPassword(fakeEmail, pass);
+        const cred = await _ucAuth.createUserWithEmailAndPassword(email, pass);
 
         /* Create user document in Firestore */
         await _ucDb.collection("users").doc(cred.user.uid).set({
             rollNumber: roll,
+            email: email,
             isNewUser:  true,
             createdAt:  firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -517,14 +530,14 @@ async function ucRegister() {
    ============================================================ */
 
 async function ucLogin() {
-    const roll  = document.getElementById("uc-login-roll").value.trim();
+    const loginId = document.getElementById("uc-login-roll").value.trim().toLowerCase();
     const pass  = document.getElementById("uc-login-pass").value;
     const errEl = document.getElementById("uc-login-error");
 
     errEl.textContent = "";
 
-    if (!/^\d{8}$/.test(roll)) {
-        errEl.textContent = "Roll number must be exactly 8 digits.";
+    if (!loginId) {
+        errEl.textContent = "Please enter your roll number or email.";
         return;
     }
 
@@ -538,9 +551,14 @@ async function ucLogin() {
     btn.textContent = "Signing in...";
 
     try {
-        const fakeEmail = roll + "@student.snuchennai.edu.in";
+        let authEmail = loginId;
+        if (/^\d{8}$/.test(loginId)) {
+            authEmail = loginId + "@student.snuchennai.edu.in";
+        } else if (!loginId.includes("@")) {
+            throw { code: "auth/invalid-email" };
+        }
 
-        await _ucAuth.signInWithEmailAndPassword(fakeEmail, pass);
+        await _ucAuth.signInWithEmailAndPassword(authEmail, pass);
 
         ucCloseAuth();
 
