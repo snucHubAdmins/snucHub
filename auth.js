@@ -214,7 +214,7 @@ function injectHTML() {
                         class="uc-input"
                         id="uc-reg-email"
                         type="email"
-                        placeholder="e.g. 23110001@student.snuchennai.edu.in"
+                        placeholder="e.g. 23110001@snuchennai.edu.in"
                     >
                 </div>
 
@@ -553,7 +553,7 @@ async function ucLogin() {
     try {
         let authEmail = loginId;
         if (/^\d{8}$/.test(loginId)) {
-            authEmail = loginId + "@student.snuchennai.edu.in";
+            authEmail = loginId + "@snuchennai.edu.in";
         } else if (!loginId.includes("@")) {
             throw { code: "auth/invalid-email" };
         }
