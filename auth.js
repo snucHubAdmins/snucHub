@@ -552,13 +552,25 @@ async function ucLogin() {
 
     try {
         let authEmail = loginId;
-        if (/^\d{8}$/.test(loginId)) {
+        let isRollNumber = /^\d{8}$/.test(loginId);
+        
+        if (isRollNumber) {
             authEmail = loginId + "@snuchennai.edu.in";
         } else if (!loginId.includes("@")) {
             throw { code: "auth/invalid-email" };
         }
 
-        await _ucAuth.signInWithEmailAndPassword(authEmail, pass);
+        try {
+            await _ucAuth.signInWithEmailAndPassword(authEmail, pass);
+        } catch (err) {
+            if (isRollNumber && (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password")) {
+                // Try legacy email format for older accounts
+                const legacyEmail = loginId + "@student.snuchennai.edu.in";
+                await _ucAuth.signInWithEmailAndPassword(legacyEmail, pass);
+            } else {
+                throw err;
+            }
+        }
 
         ucCloseAuth();
 
