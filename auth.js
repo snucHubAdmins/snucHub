@@ -199,12 +199,12 @@ function injectHTML() {
                 </div>
 
                 <div class="uc-form-group">
-                    <label class="uc-label">SNU Email ID <span style="color:#7f8aa8;font-size:12px;">(without @snuchennai.edu.in)</span></label>
+                    <label class="uc-label">SNU Email</label>
                     <input
                         class="uc-input"
                         id="uc-reg-email"
-                        type="text"
-                        placeholder="e.g. lakshith25110123"
+                        type="email"
+                        placeholder="e.g. lakshith25110123@snuchennai.edu.in"
                     >
                 </div>
 
@@ -458,7 +458,7 @@ function ucSwitchTab(tab) {
 
 async function ucRegister() {
     const roll  = document.getElementById("uc-reg-roll").value.trim();
-    const emailPrefix = document.getElementById("uc-reg-email").value.trim().toLowerCase();
+    const email = document.getElementById("uc-reg-email").value.trim().toLowerCase();
     const pass  = document.getElementById("uc-reg-pass").value;
     const pass2 = document.getElementById("uc-reg-pass2").value;
     const errEl = document.getElementById("uc-reg-error");
@@ -471,12 +471,10 @@ async function ucRegister() {
         return;
     }
 
-    if (!emailPrefix || emailPrefix.includes("@")) {
-        errEl.textContent = "Please enter just the email prefix (without @snuchennai.edu.in).";
+    if (!email || !email.includes("@")) {
+        errEl.textContent = "Please enter a valid SNU email address.";
         return;
     }
-    
-    const email = emailPrefix + "@snuchennai.edu.in";
 
     if (pass.length < 6) {
         errEl.textContent = "Password must be at least 6 characters.";
