@@ -90,20 +90,12 @@ const SNU_YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
 
 function bootAuth() {
 
-    /* Abort if placeholder config is still in place */
-    if (FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY_HERE") {
-        console.warn(
-            "[snucHub Auth] Firebase config not set. " +
-            "Replace FIREBASE_CONFIG in auth.js with your project details."
-        );
-        renderNotConfigured();
-        return;
+    if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
     }
 
-    firebase.initializeApp(FIREBASE_CONFIG);
-
     const auth = firebase.auth();
-    const db   = firebase.firestore();
+    const db = firebase.firestore();
 
     injectHTML();
     injectCSS();
@@ -194,7 +186,7 @@ function injectHTML() {
                         id="uc-reg-roll"
                         type="text"
                         maxlength="8"
-                        placeholder="e.g. 23110001"
+                        placeholder="e.g. 25110000"
                     >
                 </div>
 
@@ -204,7 +196,7 @@ function injectHTML() {
                         class="uc-input"
                         id="uc-reg-email"
                         type="email"
-                        placeholder="e.g. lakshith25110123@snuchennai.edu.in"
+                        placeholder="e.g. joe25110000@snuchennai.edu.in"
                     >
                 </div>
 
@@ -261,7 +253,7 @@ function injectHTML() {
                         class="uc-input"
                         id="uc-ob-name"
                         type="text"
-                        placeholder="e.g. Lakshman Raj"
+                        placeholder="e.g. Joe"
                     >
                 </div>
                 <button class="uc-btn" onclick="ucObNext(1)">Next →</button>
@@ -364,8 +356,8 @@ function injectHTML() {
 function injectCSS() {
     if (document.getElementById("uc-auth-css")) return;
     const link = document.createElement("link");
-    link.id   = "uc-auth-css";
-    link.rel  = "stylesheet";
+    link.id = "uc-auth-css";
+    link.rel = "stylesheet";
     link.href = "auth.css";
     document.head.appendChild(link);
 }
@@ -376,12 +368,12 @@ function injectCSS() {
 
 /* Store references globally so event handlers can use them */
 let _ucAuth = null;
-let _ucDb   = null;
+let _ucDb = null;
 let _ucCurrentUser = null;
 
 function wireEvents(auth, db) {
     _ucAuth = auth;
-    _ucDb   = db;
+    _ucDb = db;
 
     /* Close auth modal on overlay click */
     document.getElementById("uc-auth-overlay").addEventListener("click", e => {
@@ -402,7 +394,7 @@ function wireEvents(auth, db) {
 
     /* Close profile dropdown on outside click */
     document.addEventListener("click", e => {
-        const dd  = document.getElementById("uc-profile-dropdown");
+        const dd = document.getElementById("uc-profile-dropdown");
         const fab = document.getElementById("uc-login-fab");
         const navBtn = document.getElementById("uc-nav-btn");
         if (
@@ -424,8 +416,8 @@ function wireEvents(auth, db) {
 
 function ucOpenAuth() {
     document.getElementById("uc-auth-overlay").classList.add("active");
-    document.getElementById("uc-login-error").textContent   = "";
-    document.getElementById("uc-reg-error").textContent     = "";
+    document.getElementById("uc-login-error").textContent = "";
+    document.getElementById("uc-reg-error").textContent = "";
     setTimeout(() => document.getElementById("uc-login-roll")?.focus(), 200);
 }
 
@@ -434,18 +426,18 @@ function ucCloseAuth() {
 }
 
 function ucSwitchTab(tab) {
-    const loginForm    = document.getElementById("uc-login-form");
+    const loginForm = document.getElementById("uc-login-form");
     const registerForm = document.getElementById("uc-register-form");
-    const tabLogin     = document.getElementById("uc-tab-login");
-    const tabRegister  = document.getElementById("uc-tab-register");
+    const tabLogin = document.getElementById("uc-tab-login");
+    const tabRegister = document.getElementById("uc-tab-register");
 
     if (tab === "login") {
-        loginForm.style.display    = "block";
+        loginForm.style.display = "block";
         registerForm.style.display = "none";
         tabLogin.classList.add("active");
         tabRegister.classList.remove("active");
     } else {
-        loginForm.style.display    = "none";
+        loginForm.style.display = "none";
         registerForm.style.display = "block";
         tabLogin.classList.remove("active");
         tabRegister.classList.add("active");
@@ -457,9 +449,9 @@ function ucSwitchTab(tab) {
    ============================================================ */
 
 async function ucRegister() {
-    const roll  = document.getElementById("uc-reg-roll").value.trim();
+    const roll = document.getElementById("uc-reg-roll").value.trim();
     const email = document.getElementById("uc-reg-email").value.trim().toLowerCase();
-    const pass  = document.getElementById("uc-reg-pass").value;
+    const pass = document.getElementById("uc-reg-pass").value;
     const pass2 = document.getElementById("uc-reg-pass2").value;
     const errEl = document.getElementById("uc-reg-error");
 
@@ -487,7 +479,7 @@ async function ucRegister() {
     }
 
     const btn = document.getElementById("uc-reg-btn");
-    btn.disabled   = true;
+    btn.disabled = true;
     btn.textContent = "Creating account...";
 
     try {
@@ -497,8 +489,8 @@ async function ucRegister() {
         await _ucDb.collection("users").doc(cred.user.uid).set({
             rollNumber: roll,
             email: email,
-            isNewUser:  true,
-            createdAt:  firebase.firestore.FieldValue.serverTimestamp()
+            isNewUser: true,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         ucCloseAuth();
@@ -510,7 +502,7 @@ async function ucRegister() {
         errEl.textContent = ucFirebaseError(err.code);
 
     } finally {
-        btn.disabled    = false;
+        btn.disabled = false;
         btn.textContent = "Create Account";
     }
 }
@@ -521,7 +513,7 @@ async function ucRegister() {
 
 async function ucLogin() {
     const loginId = document.getElementById("uc-login-roll").value.trim().toLowerCase();
-    const pass  = document.getElementById("uc-login-pass").value;
+    const pass = document.getElementById("uc-login-pass").value;
     const errEl = document.getElementById("uc-login-error");
 
     errEl.textContent = "";
@@ -537,13 +529,13 @@ async function ucLogin() {
     }
 
     const btn = document.getElementById("uc-login-btn");
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = "Signing in...";
 
     try {
         let authEmail = loginId;
         let isRollNumber = /^\d{8}$/.test(loginId);
-        
+
         if (isRollNumber) {
             try {
                 const snap = await _ucDb.collection("users").where("rollNumber", "==", loginId).limit(1).get();
@@ -578,7 +570,7 @@ async function ucLogin() {
         errEl.textContent = ucFirebaseError(err.code);
 
     } finally {
-        btn.disabled    = false;
+        btn.disabled = false;
         btn.textContent = "Login";
     }
 }
@@ -627,11 +619,11 @@ function ucShowObStep(step) {
     ];
 
     document.getElementById("uc-onboard-title").textContent = titles[step - 1];
-    document.getElementById("uc-onboard-sub").textContent   = subs[step - 1];
+    document.getElementById("uc-onboard-sub").textContent = subs[step - 1];
 }
 
 function ucUpdatePrograms() {
-    const degree  = document.getElementById("uc-ob-degree").value;
+    const degree = document.getElementById("uc-ob-degree").value;
     const progSel = document.getElementById("uc-ob-program");
 
     progSel.innerHTML = '<option value="">Select program...</option>';
@@ -671,35 +663,35 @@ function ucObNext(step) {
 }
 
 async function ucObFinish() {
-    const errEl   = document.getElementById("uc-ob-err-4");
-    const year    = document.getElementById("uc-ob-year").value;
+    const errEl = document.getElementById("uc-ob-err-4");
+    const year = document.getElementById("uc-ob-year").value;
 
     errEl.textContent = "";
 
     if (!year) { errEl.textContent = "Please select your year."; return; }
 
-    const name    = document.getElementById("uc-ob-name").value.trim();
-    const degree  = document.getElementById("uc-ob-degree").value;
+    const name = document.getElementById("uc-ob-name").value.trim();
+    const degree = document.getElementById("uc-ob-degree").value;
     const program = document.getElementById("uc-ob-program").value;
 
     const btn = document.querySelector("#uc-ob-step-4 .uc-btn");
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = "Saving...";
 
     try {
         const user = _ucAuth.currentUser;
         await _ucDb.collection("users").doc(user.uid).update({
             displayName: name,
-            degree:      degree,
-            program:     program,
-            year:        year,
-            isNewUser:   false,
-            updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
+            degree: degree,
+            program: program,
+            year: year,
+            isNewUser: false,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         document.getElementById("uc-onboard-overlay").classList.remove("active");
         ucShowToast("Profile saved! Welcome to snucHub 🎉");
-        
+
         if (_ucCurrentUser) {
             _ucCurrentUser.displayName = name;
             _ucCurrentUser.degree = degree;
@@ -713,7 +705,7 @@ async function ucObFinish() {
         errEl.textContent = "Failed to save. Please try again.";
 
     } finally {
-        btn.disabled    = false;
+        btn.disabled = false;
         btn.textContent = "Finish Setup ✓";
     }
 }
@@ -728,7 +720,7 @@ function showLoggedIn(name, data) {
     const initials = (name || "?").charAt(0).toUpperCase();
 
     /* Update FAB (inner pages) */
-    const fab     = document.getElementById("uc-login-fab");
+    const fab = document.getElementById("uc-login-fab");
     const fabText = document.getElementById("uc-fab-text");
     if (fab) {
         if (!document.getElementById("uc-fab-avatar")) {
@@ -752,10 +744,10 @@ function showLoggedIn(name, data) {
     }
 
     /* Fill profile dropdown */
-    document.getElementById("uc-dp-name").textContent   = data.displayName || name || "—";
-    document.getElementById("uc-dp-roll").textContent   = data.rollNumber  || "—";
-    document.getElementById("uc-dp-degree").textContent = data.degree      || "—";
-    document.getElementById("uc-dp-year").textContent   = data.year        || "—";
+    document.getElementById("uc-dp-name").textContent = data.displayName || name || "—";
+    document.getElementById("uc-dp-roll").textContent = data.rollNumber || "—";
+    document.getElementById("uc-dp-degree").textContent = data.degree || "—";
+    document.getElementById("uc-dp-year").textContent = data.year || "—";
     document.getElementById("uc-dp-avatar").textContent = initials;
 }
 
@@ -789,14 +781,14 @@ function ucToggleProfileOrLogin() {
 
 function ucFirebaseError(code) {
     const map = {
-        "auth/email-already-in-use":    "This roll number is already registered.",
-        "auth/wrong-password":          "Incorrect password. Please try again.",
-        "auth/user-not-found":          "No account found for this roll number.",
-        "auth/too-many-requests":       "Too many attempts. Please wait a moment.",
-        "auth/invalid-credential":      "Incorrect roll number or password.",
-        "auth/network-request-failed":  "Network error. Check your connection.",
-        "auth/weak-password":           "Password must be at least 6 characters.",
-        "auth/invalid-email":           "Invalid roll number format."
+        "auth/email-already-in-use": "This roll number is already registered.",
+        "auth/wrong-password": "Incorrect password. Please try again.",
+        "auth/user-not-found": "No account found for this roll number.",
+        "auth/too-many-requests": "Too many attempts. Please wait a moment.",
+        "auth/invalid-credential": "Incorrect roll number or password.",
+        "auth/network-request-failed": "Network error. Check your connection.",
+        "auth/weak-password": "Password must be at least 6 characters.",
+        "auth/invalid-email": "Invalid roll number format."
     };
     return map[code] || "Something went wrong. Please try again.";
 }
@@ -810,28 +802,4 @@ function ucShowToast(msg) {
     toast.textContent = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2800);
-}
-
-/* ============================================================
-   NOT CONFIGURED — renders a warning button instead
-   ============================================================ */
-
-function renderNotConfigured() {
-    injectCSS();
-
-    if (!document.getElementById("uc-nav-btn")) {
-        const fab = document.createElement("button");
-        fab.id = "uc-login-fab";
-        fab.style.background = "#ff4444";
-        fab.textContent = "⚠ Auth not configured";
-        fab.title = "Replace FIREBASE_CONFIG in auth.js";
-        document.body.appendChild(fab);
-    }
-
-    const navBtn = document.getElementById("uc-nav-btn");
-    if (navBtn) {
-        navBtn.style.background = "#ff4444";
-        navBtn.textContent = "⚠ Auth not configured";
-        navBtn.title = "Replace FIREBASE_CONFIG in auth.js";
-    }
 }

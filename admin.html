@@ -69,7 +69,7 @@ body { background: #0b0f19; color: white; min-height: 100vh; overflow-x: hidden;
 @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
 .lock-icon { font-size: 54px; margin-bottom: 16px; display: inline-block; animation: bounce 3s infinite ease-in-out; filter: drop-shadow(0 0 20px rgba(79,102,255,0.4)); }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.lock-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #fff, #aab4d6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.lock-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #fff, #aab4d6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .lock-sub { color: #8e9bbd; font-size: 15px; margin-bottom: 30px; }
 .lock-err { color: #ff6b6b; font-size: 13px; margin-top: 12px; min-height: 18px; font-weight: 500; }
 
@@ -335,7 +335,7 @@ function checkPwd() {
     
     auth.signInWithEmailAndPassword(email, pwd)
         .then((cred) => {
-            if (cred.user.email !== "admin@snuchub.com" && cred.user.email !== "admin@unicompass.com") {
+            if (cred.user.email !== "admin@snuchub.com") {
                 auth.signOut();
                 throw new Error("Unauthorized: Not an admin account.");
             }
